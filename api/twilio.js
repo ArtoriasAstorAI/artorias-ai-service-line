@@ -22,8 +22,7 @@ export default async function handler(req, res) {
 
     const gptData = await gptResponse.json();
 
-    // ✅ Fix: Check if the choices exist and handle gracefully
-    const reply = gptData?.choices?.[0]?.message?.content || "Sorry, I couldn't generate a response.";
+    const reply = gptData?.choices?.[0]?.message?.content || "Sorry, I couldn't generate a response";
 
     const audioBuffer = await generateElevenLabsAudio(reply);
     const filename = `response-${Date.now()}.mp3`;
@@ -35,13 +34,8 @@ export default async function handler(req, res) {
         <Play>${audioUrl}</Play>
       </Response>
     `);
-  } catch (error) {
-    console.error("Error:", error);
-    res.setHeader('Content-Type', 'application/xml');
-    res.status(500).send(`
-      <Response>
-        <Say>Something went wrong. Please try again later.</Say>
-      </Response>
-    `);
+  } catch (err) {
+    console.error("Error in Twilio handler:", err);
+    res.status(500).send(`<Response><Say>There was an error generating a response.</Say></Response>`);
   }
 }
